@@ -16,5 +16,8 @@ public class NotificationHandler implements INotificationHandler {
 
     @Override
     public void sendSms(SendSmsRequestDto request) {
+        var notification = notificationRequestMapper.toDomain(request);
+
+        notificationServicePort.sendSms(notification);
     }
 }
