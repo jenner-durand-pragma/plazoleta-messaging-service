@@ -12,5 +12,8 @@ public class NotificationUseCase implements INotificationServicePort {
 
     @Override
     public void sendSms(SmsNotification notification) {
+        notification.checkToAsPhone();
+
+        notificationProviderPort.deliver(notification);
     }
 }
