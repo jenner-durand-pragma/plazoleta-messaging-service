@@ -183,16 +183,6 @@ public class GlobalExceptionHandler {
         );
     }
 
-    // ─── 503 Service Unavailable (Feign Exception) ───
-    @ExceptionHandler(feign.FeignException.class)
-    public ResponseEntity<ErrorResponse> handleFeign(feign.FeignException ex, WebRequest request) {
-        return build(HttpStatus.SERVICE_UNAVAILABLE,
-                "A required service is temporarily unavailable",
-                request,
-                java.util.Collections.emptyList()
-        );
-    }
-
     // ─── Utilities ───
 
     private FieldErrorDetail toFieldDetail(FieldError fieldError) {
