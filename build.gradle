@@ -26,6 +26,7 @@ ext {
 	lombokMapstructBindingVersion = "0.2.0"
 	openApiVersion = "1.6.11"
 	jjwtVersion = "0.11.5"
+	twilioVersion = "9.14.1"
 }
 
 dependencies {
@@ -39,6 +40,9 @@ dependencies {
 	implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
 	runtimeOnly  "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
 	runtimeOnly  "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
+
+	// Twilio SDK
+	implementation "com.twilio.sdk:twilio:${twilioVersion}"
 
 	// ─── MapStruct + Lombok ─────────────────────────────
 	implementation "org.mapstruct:mapstruct:${mapstructVersion}"
@@ -56,6 +60,7 @@ dependencies {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
 	testImplementation "org.springframework.security:spring-security-test"
+	testImplementation 'org.mockito:mockito-inline'
 }
 
 tasks.named('test') {

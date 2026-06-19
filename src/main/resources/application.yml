@@ -14,7 +14,6 @@ security:
 
 # Twilio configuration
 twilio:
-  enabled: ${TWILIO_ENABLED:false}
   account-sid: ${TWILIO_ACCOUNT_SID:}
   auth-token: ${TWILIO_AUTH_TOKEN:}
   from-number: ${TWILIO_FROM_NUMBER:}

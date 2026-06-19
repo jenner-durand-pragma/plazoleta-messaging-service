@@ -1,6 +1,6 @@
 package com.pragma.plazoleta.infrastructure.out.security.jwt;
 
-import com.pragma.plazoleta.domain.models.UserInformation;
+import com.pragma.plazoleta.domain.model.UserInformation;
 import com.pragma.plazoleta.infrastructure.configuration.security.token.exception.InvalidTokenException;
 import com.pragma.plazoleta.infrastructure.out.security.jwt.configuration.JwtProperties;
 import io.jsonwebtoken.Jwts;
