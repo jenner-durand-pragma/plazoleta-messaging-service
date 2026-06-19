@@ -1,2 +1,7 @@
+twilio:
+  account-sid: "test-sid-12345"
+  auth-token: "test-token-12345"
+  from-number: "+10000000000"
+
 appDescription: "Pragma Plazoleta - Messaging Service Test"
 appVersion: "1.0.0"
