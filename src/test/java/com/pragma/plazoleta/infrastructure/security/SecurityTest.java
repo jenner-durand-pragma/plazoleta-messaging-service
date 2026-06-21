@@ -5,12 +5,14 @@ import com.pragma.plazoleta.infrastructure.configuration.SecurityConfiguration;
 import com.pragma.plazoleta.infrastructure.configuration.security.CustomAccessDeniedHandler;
 import com.pragma.plazoleta.infrastructure.configuration.security.CustomAuthenticationEntryPoint;
 import com.pragma.plazoleta.infrastructure.configuration.security.CustomAuthenticationFilter;
-import com.pragma.plazoleta.infrastructure.configuration.security.annotation.IsEmployee;
+import com.pragma.plazoleta.infrastructure.configuration.security.annotation.IsEmployeeOrClient;
 import com.pragma.plazoleta.infrastructure.configuration.security.token.ITokenValidationPort;
 import com.pragma.plazoleta.infrastructure.configuration.security.token.dto.AuthenticatedUser;
 import com.pragma.plazoleta.infrastructure.configuration.security.token.exception.InvalidTokenException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -48,7 +50,7 @@ class SecurityTest {
     @Test
     @DisplayName("Should return 401 Unauthorized when no Authorization header is present")
     void shouldReturn401WhenNoToken() throws Exception {
-        mockMvc.perform(get("/dummy/employee-only"))
+        mockMvc.perform(get("/dummy/protected"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(
                         jsonPath("$.message")
@@ -63,7 +65,7 @@ class SecurityTest {
         var exception = mock(IllegalArgumentException.class);
         when(tokenValidationPort.validate(badToken)).thenThrow(new InvalidTokenException("Expirado", exception));
 
-        mockMvc.perform(get("/dummy/employee-only")
+        mockMvc.perform(get("/dummy/protected")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + badToken))
                 .andExpect(status().isUnauthorized())
                 .andExpect(
@@ -75,11 +77,11 @@ class SecurityTest {
     @Test
     @DisplayName("Should return 403 Forbidden when user is authenticated but lacks required role")
     void shouldReturn403WhenRoleIsWrong() throws Exception {
-        var validToken = "valid.client.token";
-        var clientUser = new AuthenticatedUser(5L, "client@test.com", "CLIENT");
-        when(tokenValidationPort.validate(validToken)).thenReturn(clientUser);
+        var validToken = "valid.owner.token";
+        var ownerUser = new AuthenticatedUser(5L, "owner@test.com", "OWNER");
+        when(tokenValidationPort.validate(validToken)).thenReturn(ownerUser);
 
-        mockMvc.perform(get("/dummy/employee-only")
+        mockMvc.perform(get("/dummy/protected")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken))
                 .andExpect(status().isForbidden())
                 .andExpect(
@@ -88,14 +90,14 @@ class SecurityTest {
                 );
     }
 
-    @Test
-    @DisplayName("Should return 200 OK when token is valid and role matches")
-    void shouldReturn200WhenTokenAndRoleAreValid() throws Exception {
-        var validToken = "valid.employee.token";
-        var employeeUser = new AuthenticatedUser(7L, "employee@test.com", "EMPLOYEE");
-        when(tokenValidationPort.validate(validToken)).thenReturn(employeeUser);
+    @ParameterizedTest(name = "Should return 200 OK when token is valid and role is {0}")
+    @ValueSource(strings = {"EMPLOYEE", "CLIENT"})
+    void shouldReturn200WhenTokenAndRoleAreValid(String role) throws Exception {
+        var validToken = "valid." + role.toLowerCase() + ".token";
+        var allowedUser = new AuthenticatedUser(7L, role.toLowerCase() + "@test.com", role);
+        when(tokenValidationPort.validate(validToken)).thenReturn(allowedUser);
 
-        mockMvc.perform(get("/dummy/employee-only")
+        mockMvc.perform(get("/dummy/protected")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken))
                 .andExpect(status().isOk())
                 .andExpect(
@@ -106,8 +108,8 @@ class SecurityTest {
     @RestController
     public static class DummyController {
 
-        @IsEmployee
-        @GetMapping("/dummy/employee-only")
+        @IsEmployeeOrClient
+        @GetMapping("/dummy/protected")
         public DummyResponse getProtectedData() {
             return new DummyResponse("Access Granted");
         }
