@@ -13,6 +13,8 @@ import com.pragma.plazoleta.infrastructure.exceptionhandler.GlobalExceptionHandl
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -76,11 +78,22 @@ class NotificationRestControllerTest {
         );
     }
 
-    @Test
-    @DisplayName("Should return 204 No Content when EMPLOYEE dispatches a valid SMS in send sms")
-    void shouldReturn204NoContentWhenEmployeeDispatchesAValidSmsInSendSms() throws Exception {
+    @ParameterizedTest(name = "Should return 204 No Content when {0} dispatches a valid SMS in send sms")
+    @ValueSource(strings = {"ROLE_EMPLOYEE", "ROLE_CLIENT"})
+    void shouldReturn204NoContentWhenAuthorizedUserDispatchesAValidSmsInSendSms(String role) throws Exception {
+        var rolePrincipal = new AuthenticatedUser(
+                1L,
+                "user@plazoleta.com",
+                role.replace("ROLE_", "")
+        );
+        var auth = new UsernamePasswordAuthenticationToken(
+                rolePrincipal,
+                null,
+                List.of(new SimpleGrantedAuthority(role))
+        );
+
         mockMvc.perform(post("/api/v1/notifications/sms")
-                        .with(authentication(employeeAuthentication))
+                        .with(authentication(auth))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isNoContent());

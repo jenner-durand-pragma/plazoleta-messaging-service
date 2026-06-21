@@ -2,7 +2,7 @@ package com.pragma.plazoleta.infrastructure.input.rest;
 
 import com.pragma.plazoleta.application.dto.request.notification.SendSmsRequestDto;
 import com.pragma.plazoleta.application.handler.INotificationHandler;
-import com.pragma.plazoleta.infrastructure.configuration.security.annotation.IsEmployee;
+import com.pragma.plazoleta.infrastructure.configuration.security.annotation.IsEmployeeOrClient;
 import com.pragma.plazoleta.infrastructure.exceptionhandler.common.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -29,7 +29,7 @@ public class NotificationRestController {
 
     private final INotificationHandler notificationHandler;
 
-    @IsEmployee
+    @IsEmployeeOrClient
     @Operation(summary = "Send an SMS", description = "Dispatches an SMS to the destination phone number.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "SMS accepted by the provider"),
@@ -39,9 +39,12 @@ public class NotificationRestController {
             @ApiResponse(responseCode = "401", description = "Authentication required",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "403", description = "Caller is not an EMPLOYEE",
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Caller does not have the required role (EMPLOYEE or CLIENT)",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ErrorResponse.class)))
+                            schema = @Schema(implementation = ErrorResponse.class))
+            )
     })
     @PostMapping("/sms")
     @ResponseStatus(HttpStatus.NO_CONTENT)
